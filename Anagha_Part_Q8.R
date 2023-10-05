@@ -49,7 +49,7 @@ simu_fn <- function(words, T, P) {
   return(paste(char, collapse = " "))
 }
 
-# Generating a 50-word section as para
+# Defining a 50-word section as para
 para <- simu_fn(b, T, P)
 
 # Printing the generated section with cat
