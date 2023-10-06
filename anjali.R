@@ -105,3 +105,19 @@ P = req_matrix_P[-na_row_index_P,]
 print(P)
 
 
+# ------- Ans 9 --------- #
+# Anjali's part for Practical-1(II)
+
+# Calculating the probability of a word in b
+# Indexing vector b from the set of all words
+index_b <- match(words, b)
+# Counting the frequency of each word using "tabulate function"
+bword_count<- tabulate(c(index_b))
+# Calculating the probabilty of each word in b by calculating 
+# frequency_of_each_word/sum_of_all_frequencies
+prob_b <- bword_count/sum(bword_count)
+# Taking a sample=50 words out of the vector b using probability 
+# density in the sample function
+b_50 <- sample(b,50,prob=prob_b)
+# Using cat function to display the sample as a paragraph
+cat(b_50,"\n")
