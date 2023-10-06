@@ -45,9 +45,13 @@ a <- scan("4300-0.txt",what="character",skip=73,nlines=32858-73)
 # Replacing unwanted character strings from the text with no text using
 # gsub function, which performs the replacement.
 a <- gsub("_(","",a,fixed=TRUE) ## remove "_("
-
+a <- gsub("_","",a,fixed=TRUE) ## remove "_"
+a <- gsub("(","",a,fixed=TRUE) ## remove "("
+a <- gsub("_)","",a,fixed=TRUE) ## remove "_)"
+a <- gsub(")","",a,fixed=TRUE) ## remove ")"
 
 # ------- Ans 4,5 ------- #
+
 #Anagha's part for Practical-1(I)
 
 #Creating split_punct() AND Separating punctuation marks and words
@@ -104,6 +108,9 @@ a <- split_punct(a, ".")
 a <- split_punct(a, ";")
 a <- split_punct(a, ":")
 a <- split_punct(a, "?")
+a <- split_punct(a, "-")
+a <- split_punct(a, "—")
+
 
 # ------- Ans 6 ------- #
 #Navya's part for Practical-1
@@ -159,6 +166,7 @@ m <- 1000
 b <- c(names((word_freq[uword_count >= threshold][1:m])))
 
 # ------- Ans7 ------- #
+# Anjali's part for Practical-1(I)
 
 # Using match function to create a vector giving which element 
 # of b each element of the full text vector corresponds to
@@ -267,11 +275,28 @@ simu_fn <- function(words, T, P) {
 }
 
 # Defining a 50-word section as para
+# take sample from b for 50 words
 para <- simu_fn(b, T, P)
 
 # Printing the generated section with cat
 cat(para, "\n")
 
+# ------- Ans 9 --------- #
+# Anjali's part for Practical-1(II)
+
+# Calculating the probability of a word in b
+# Indexing vector b from the set of all words
+index_b <- match(words, b)
+# Counting the frequency of each word using "tabulate function"
+bword_count<- tabulate(c(index_b))
+# Calculating the probabilty of each word in b by calculating 
+# frequency_of_each_word/sum_of_all_frequencies
+prob_b <- bword_count/sum(bword_count)
+# Taking a sample=50 words out of the vector b using probability 
+# density in the sample function
+b_50 <- sample(b,50,prob=prob_b)
+# Using cat function to display the sample as a paragraph
+cat(b_50,"\n")
 
 # ------- Ans 10 ------- #
 #Navya's part for Practical-1
@@ -290,3 +315,4 @@ indexing_2 <- match(b2[indices_to_replace], a2)
 b2[indices_to_replace] <- a[indexing_2]
 # Print the resultant modified b vectore
 print(b2)
+
