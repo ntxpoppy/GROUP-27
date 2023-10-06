@@ -7,7 +7,7 @@
 # The following members form Group 27:
 #   1. Anagha - S2596158
 #   2. Anjali - S2580177
-#   3. Navya  - S2602689
+#   3. Navya  - S2602687
 
 # Contribution of each member:
 #   1. Anagha - Ques 4,5,8 (36% of the total work)
@@ -102,6 +102,7 @@ split_punct <- function(words, punctuation) {
 }
 
 #Question 5: Separating punctuation marks and words using split_punct()
+#Separated "-,—" as an extra step of pre-processing
 a <- split_punct(a, "!")
 a <- split_punct(a, ",")
 a <- split_punct(a, ".")
@@ -313,6 +314,12 @@ indices_to_replace <- which(b %in% a2)
 indexing_2 <- match(b2[indices_to_replace], a2)
 # Replace the words in b with corresponding words from a vector b2, indexing:
 b2[indices_to_replace] <- a[indexing_2]
-# Print the resultant modified b vectore
+# Print the resultant modified b vector
 print(b2)
+
+# Thank you for going through our project. 
+
+#################
+#   THANK YOU   #
+#################
 

@@ -7,7 +7,7 @@
 # The following members form Group 27:
 #   1. Anagha - S2596158
 #   2. Anjali - S2580177
-#   3. Navya  - S2602689
+#   3. Navya  - S2602687
 
 # Contribution of each member:
 #   1. Anagha - Ques 4,5,8 (36% of the total work)
