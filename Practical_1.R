@@ -110,35 +110,57 @@ a <- split_punct(a, ":")
 a <- split_punct(a, "?")
 
 # ------- Ans 6 ------- #
+#Navya's part for Practical-1
+
+#ANS Q6
 
 #a)
-words <-c(a) #pasting value into variable 'words'
-words <- c(tolower(words)) #lowercased words
-unique_words <- c(unique(words)) ##finding unique words in the text and storing as vector 
+
+#storing vector of words after processing into variable named 'words'.
+words <-c(a)
+#converting that vector 'words' into all-lower cases and updating that variable itself.
+words <- c(tolower(a)) 
+#finding vector of unique words and storing it in a variable named "unique_words".
+unique_words <- c(unique(words)) 
 
 #b)
-#using lower text vector and unique word vector, to find each corresponding word in both.
 
-indexing <- match(tolower(a), unique_words) #finding vector of indices that indicate which element of the text matches to elements from the unique vectors
+#Finding vector of indices indicating which element in the 
+#unique word vector each element in the lower case text corresponds to, and storing the result in variable named "indexing".
+indexing <- match(words, unique_words)
+#checking the length of the index vector and the text vector'a'.
+check_length <- length(indexing) == length(a) #value return TRUE if same length and FALSE otherwise
+#print the findings as BOOLEAN value. 
+print(check_length) #value return TRUE if same length and FALSE otherwise
+#The lengths are same, hence verified.
 
 #c)
-#table(indexing) #counts the number of times unique words come up in table format for ref
 
-# using tabulate function
-uword_count<- tabulate(indexing)
+#Using 'tabulate' to count how many times each unique word occurs in the text with 'indexing'
+uword_count<- tabulate(c(indexing))
+
 #d)
-wordfreQ <-table((tolower(a)))
 
-freq_words <- sort(c(uword_count), decreasing = TRUE) #sorting numbers in decreasing to obtain most common to least common number of words
-threshold <- freq_words[1000] #obtaining number of times a word  must come in 1000 most common words
-cat("Threshold required to retain 1000 words:", threshold, "\n") #printing the threshold value
+#finding frequencies of the words in vector of 'words'(which is lower-cased)
+word_freq <- table(c(words))
+#sorting from decreasing order to have most occurring words towards the start of the list
+freq_words <- sort(c(uword_count), decreasing = TRUE)
+
+#given that m ≈ 1000;
+m <- 1000 
+#finding threshold for 1000 words from the above-'freq_words'
+threshold <- freq_words[m] 
+#Displaying the threshold value
+cat("Threshold required to retain m ≈ 1000 most common words:", threshold, "\n") 
 
 #e)
 
-m <- 1000 #number of words, given m = 1000
-b <- c(names((wordfreQ[uword_count >= threshold][1:m]))) #extracting words associated with the frequencies, with less than or equal to the threshold of 24, iterating from 1 through 1000 elements.
-
-cat("1000 most commonly occurring words: \n", b) #display the required result
+#given that m ≈ 1000;
+m <- 1000 
+#Most occurring words can be included in the set of m ≈ 1000 most common words,
+#if the frequency of that word is equal to or more than the threshold value found
+#and storing those words as vector in 'b'.
+b <- c(names((word_freq[uword_count >= threshold][1:m])))
 
 # ------- Ans7 ------- #
 
@@ -193,3 +215,21 @@ req_matrix_P <- cbind(col_1_P,col_2,deparse.level=0)
 row_sum_P <- rowSums(req_matrix_P)
 na_row_index_P <- which(is.na(row_sum_P))
 P <- req_matrix_P[-na_row_index_P,]
+
+# ------- Ans 10 ------- #
+#Navya's part for Practical-1
+
+#Q10:
+
+#let a2 be a vector that holds unique letters of a (to match with b) in lowercase.
+a2 <- tolower(unique(a))
+#let modified b be b2 and have the stored vector b which was found previously.
+b2 <- c(b)
+# Find the indices of words in 'b' that are lowercase in 'a2'
+indices_to_replace <- which(b %in% a2)
+#indexing them:
+indexing_2 <- match(b2[indices_to_replace], a2)
+# Replace the words in b with corresponding words from a vector b2, indexing:
+b2[indices_to_replace] <- a[indexing_2]
+# Print the resultant modified b vectore
+print(b2)
