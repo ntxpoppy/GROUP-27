@@ -2,16 +2,36 @@
 #    Practical 2     #
 #--------------------#
 
+# ------- Group Introduction ------- #
+
+# The following members form Group 27:
+#   1. Anagha - S2596158
+#   2. Anjali - S2580177
+#   3. Navya  - S2602687
+
+# Contribution of each member:
+#   1. Anagha - Ques 4,5,8 (30% of the total work)
+#   2. Anjali - Ques 7,9   (37% of the total work)
+#   3. Navya  - Ques 6,10  (33% of the total work)
+
+# We collectively decided this distribution of questions. Anjali generated the qsim 
+# function to obtain nb and nf vectors. Navya generated the qsim function to obtain
+# the eq vector and estimated the probability of atleast one car missing the ferry
+# departure. Anagha produced the 4-panel plot.
+
+# ------- Overview of the project ------- #
+
 # This practical involves simulating the flow of cars through French 
 # and British passport control at a French ferry terminal in the context 
 # of managing queues. The simulation is designed to model a 2-hour period 
 # before a ferry departure.
 
-# Define a function, qsim, with various parameters to simulate the queue system
 # Setting seed for reproduceability
 # Clearing all variables 
 rm(list = ls())
 set.seed(123)
+
+# Define a function, qsim, with various parameters to simulate the queue system
 qsim <- function(mf, mb, a.rate, trb, trf, tmb, tmf, maxb) {
   # Initialize variables for simulation of 2 hours
   # To track the average French and British queue length at each time step
@@ -84,25 +104,31 @@ qsim <- function(mf, mb, a.rate, trb, trf, tmb, tmf, maxb) {
       french_queue_lengths[shortest_french_queue] <- round(runif(1, min = tmf, max = tmf + trf))
     }
     
-    # Calculate nf, nb, and eq
+    # Here we store the average french queue length at each second
     nf[second] <- sum(french_queue_lengths)/mf
+    # And the average british queue length at each second
     nb[second] <- sum(british_queue_lengths)/mb
-    eq[second] <- nf[second] * (tmf + trf) / 2
+    # We are also storing the average expected waiting time for a car at the 
+    # start of the french queue for each second
+    eq[second] <- nf[second] * (tmf + trf)/2
     
     if (second == check_in_closing_time) {
-      # Close check-in 30 minutes before departure
+      # Closing check-in 30 minutes before departure so the probability now becomes 0
       a.rate <- 0
     }
   }
   
-  # Create a data frame
-  result_df <- data.frame(Time = 1:simulation_time, nf = nf, nb = nb, eq = eq)
+  # Creating a data frame for easier visualisation
+  result_df <- data.frame(Time = 1:simulation_time, nf=nf,nb=nb,eq=eq)
   
   return(result_df)
 }
 
-# Example usage with default parameters:
-result_df <- qsim(mf = 5, mb = 5, a.rate = 0.1, trb = 40, trf = 40, tmb = 30, tmf = 30, maxb = 20)
+# Getting the results with the given parameters:
+result_df <- qsim(mf=5,mb=5,a.rate=0.1,trb=40,trf=40,tmb=30,tmf=30,maxb=20)
 
-# Access the data frame
-result_df
+# Thank you for going through our project. 
+
+#################
+#   THANK YOU   #
+#################
