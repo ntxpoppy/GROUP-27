@@ -2,6 +2,14 @@
 #Calculating Eq and probability of atleast 1 car missing teh ferry departure 
 #based on 100 qsim runs.
 
+#Eq formulation:
+
+# We are also storing the average expected waiting time for a car at the 
+# start of the french queue for each second
+eq[second] <- (nf[second]*0.5*(tmf+trf)) +(nb[second]*0.5*(tmb +trb))
+
+#calculating prob.
+
 # Getting the results with the given parameters:
 result_df <- qsim(mf=5,mb=5,a.rate=0.1,trb=40,trf=40,tmb=30,tmf=30,maxb=20)
 
