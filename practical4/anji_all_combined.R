@@ -31,7 +31,7 @@ netup <- function(d) {
   
   #iterating through number of nodes except for the last one.
   for (l in 1:(length(d) - 1)) {
-    nn$W[[l]] <- matrix(runif(d[l] * d[l + 1], 0, 0.2), nrow = d[l], ncol = d[l + 1])
+    nn$W[[l]] <- matrix(runif(d[l+1] * d[l], 0, 0.2), nrow = d[l+1], ncol = d[l])
     nn$b[[l]] <- runif(d[l + 1], 0, 0.2)
   }
   
@@ -39,7 +39,13 @@ netup <- function(d) {
   return(nn)
 }
 
-x <- netup(c(3,4,4,2))
+# Q2: Define a function to perform the forward pass
+forward <- function(nn, inp=nn$h[[1]]) {
+  for (l in seq_along(nn$W)) {
+    nn$h[[l + 1]] <- pmax(0, nn$W[[l]]%*%nn$h[[l]] + nn$b[[l]])
+  }
+  return(nn)
+}
 
 # Q3 solution
 
@@ -119,7 +125,7 @@ test_data <- iris[(n_train + 1):nrow(iris), -5]
 test_labels <- as.integer(iris[(n_train + 1):nrow(iris), 5])
 
 # Train a 4-8-7-3 network
-nn <- netup(c(4, 8, 7, 3))
+nn <- netup(c(3, 4, 4, 2))
 nn <- train(nn, train_data, train_labels)
 
 # Q6: Classify the test data and calculate the misclassification rate
