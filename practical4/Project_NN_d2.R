@@ -32,7 +32,8 @@ netup <- function(d) {
   
   #iterating through number of nodes except for the last one.
   for (l in 1:(length(d) - 1)) {
-    nn$W[[l]] <- matrix(runif(d[l+1] * d[l], 0, 0.2), nrow = d[l+1], ncol = d[l])
+    nn$W[[l]] <- matrix(runif(d[l+1] * d[l], 0, 0.2), 
+                        nrow = d[l+1], ncol = d[l])
     nn$b[[l]] <- runif(d[l + 1], 0, 0.2)
   }
   
@@ -73,13 +74,15 @@ backward <- function(nn, k) {
     n_layers <- length(nn$h)
     
     # Compute derivatives for the output layer
-    #nn$dh[[n_layers]] <- compute_output_layer_derivative(updated_network$h[[n_layers]], k)
+    #nn$dh[[n_layers]] <- compute_output_layer_derivative
+    #(updated_network$h[[n_layers]], k)
     
     
     # Backpropagation to compute derivatives for hidden layers
     for (l in rev(seq_len(n_layers - 1))) {
       
-      nn$dh[[n_layers]] <- compute_output_layer_derivative(updated_network$h[[n_layers]], k)
+      nn$dh[[n_layers]] <- compute_output_layer_derivative(updated_network$
+                                                             h[[n_layers]], k)
       
       nn$dW[[l]] <- nn$dh[[l + 1]] %*% t(nn$h[[l]])
       nn$db[[l]] <- nn$dh[[l + 1]]
@@ -108,7 +111,8 @@ backward <- function(nn, k) {
     updated_network <- forward(nn, inp[i, ])
     
     # Compute loss for data point i
-    pk <- exp(updated_network$h[[n_layers]]) / sum(exp(updated_network$h[[n_layers]]))
+    pk <- exp(updated_network$h[[n_layers]]) / sum(exp(updated_network$
+                                                         h[[n_layers]]))
     total_loss <- total_loss - log(pk[k[i]])
     
     # Backward pass for the corresponding class k
@@ -142,7 +146,8 @@ train <- function(nn, inp, k, eta = 0.01, mb = 10, nstep = 10000) {
   n_data <- nrow(inp)
   
   # Initialize gradients for the mini-batch
-  mini_batch_dW <- lapply(nn$W, function(x) matrix(0, nrow = nrow(x), ncol = ncol(x)))
+  mini_batch_dW <- lapply(nn$W, function(x) matrix(0, nrow = nrow(x), 
+                                                   ncol = ncol(x)))
   mini_batch_db <- lapply(nn$b, function(x) numeric(length(x)))
   
   
@@ -159,7 +164,8 @@ train <- function(nn, inp, k, eta = 0.01, mb = 10, nstep = 10000) {
       updated_network <- forward(nn, inp[i,])
       
       # Compute loss for the data point i
-      pk <- exp(updated_network$h[[length(updated_network$h)]]) / sum(exp(updated_network$h[[length(updated_network$h)]]))
+      pk <- exp(updated_network$h[[length(updated_network$h)]]) / 
+        sum(exp(updated_network$h[[length(updated_network$h)]]))
       total_loss <- total_loss - log(pk[k[i]])
       
       # Backward pass for the corresponding class k
@@ -167,7 +173,8 @@ train <- function(nn, inp, k, eta = 0.01, mb = 10, nstep = 10000) {
       
       # Accumulate gradients
       for (l in seq_along(nn$W)) {
-        nn$dW <- lapply(nn$W, function(x) matrix(0, nrow = as.numeric(nrow(x)), ncol = as.numeric(ncol(x))))
+        nn$dW <- lapply(nn$W, function(x) matrix(0, nrow = as.numeric(nrow(x)), 
+                                                 ncol = as.numeric(ncol(x))))
         nn$db <- lapply(nn$b, function(x) numeric(length(x)))
         
       }
@@ -192,7 +199,7 @@ train <- function(nn, inp, k, eta = 0.01, mb = 10, nstep = 10000) {
 # Q5 solution
 #Load the iris dataset and preprocess it
 data(iris)
-set.seed(69)  # Set a seed for reproducibility
+set.seed(80)  # Set a seed for reproducibility
 iris <- iris[sample(nrow(iris)), ]  # Shuffle the dataset
 
 # Split the data into training and test sets
@@ -240,7 +247,8 @@ compute_misclassification_rate <- function(nn, test_data, test_labels) {
 }
 
 # Use the trained neural network to predict class labels for the test set
-misclassification_rate <- compute_misclassification_rate(nn, test_data, test_labels)
+misclassification_rate <- compute_misclassification_rate(nn, test_data, 
+                                                         test_labels)
 
 # Print the misclassification rate
 cat("Misclassification Rate:", misclassification_rate, "\n")
