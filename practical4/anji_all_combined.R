@@ -51,30 +51,92 @@ forward <- function(nn, inp=nn$h[[1]]) {
 
 backward <- function(nn, k) {
   n_layers <- length(nn$h)
-  n_outputs <- length(nn$h[[n_layers]])
+  n_data <- length(k)
+  eta <- 0.01
+  
+  # Helper function to compute derivatives for the output layer
+  compute_output_layer_derivative <- function(h_output, k) {
+    exp_h <- exp(h_output)
+    softmax_probs <- exp_h / sum(exp_h)
+    softmax_probs[k] <- softmax_probs[k] - 1
+    return(softmax_probs)
+  }
+  
+  # Helper function to compute derivatives for hidden layers
+  #compute_hidden_layer_derivative <- function(W, h, dh_next) {
+  # ifelse(h > 0, t(W) %*% dh_next, 0)
+  #}
+  
+  
+  backward_output_layer <- function(nn, k, updated_network) {
+    n_layers <- length(nn$h)
+    
+    # Compute derivatives for the output layer
+    #nn$dh[[n_layers]] <- compute_output_layer_derivative(updated_network$h[[n_layers]], k)
+    
+    
+    # Backpropagation to compute derivatives for hidden layers
+    for (l in rev(seq_len(n_layers - 1))) {
+      
+      nn$dh[[n_layers]] <- compute_output_layer_derivative(updated_network$h[[n_layers]], k)
+      
+      nn$dW[[l]] <- nn$dh[[l + 1]] %*% t(nn$h[[l]])
+      nn$db[[l]] <- nn$dh[[l + 1]]
+      
+      # Ensure that nn$h[[l]] is a column vector for matrix multiplication
+      nn$h[[l]] <- matrix(nn$h[[l]], ncol = 1)
+      
+      # Update nn$dh[[l]] using matrix multiplication
+      nn$dh[[l]] <- ifelse(nn$h[[l]] > 0, t(nn$W[[l]]) %*% nn$dh[[l + 1]], 0)
+    }
+    
+    return(nn)
+  }
   
   # Initialize lists for derivatives
   nn$dh <- vector("list", length = n_layers)
   nn$dW <- vector("list", length = n_layers - 1)
   nn$db <- vector("list", length = n_layers - 1)
   
-  # Compute derivatives for the output layer
-  nn$dh[[n_layers]] <- ifelse(seq_len(n_outputs) == k, 
-                              exp(nn$h[[n_layers]]) / sum(exp(nn$h[[n_layers]])) - 1,
-                              exp(nn$h[[n_layers]]) / sum(exp(nn$h[[n_layers]])))
+  # Initialize loss and average loss
+  total_loss <- 0
   
-  # Backpropagation to compute derivatives for hidden layers
-  for (l in rev(seq_len(n_layers - 1))) {
-    nn$dW[[l]] <- nn$h[[l]] %*% t(nn$dh[[l + 1]])
-    nn$db[[l]] <- nn$dh[[l + 1]]
-    nn$dh[[l]] <- ifelse(nn$h[[l]] > 0, nn$W[[l]] %*% nn$dh[[l+1]], 0)
+  # Compute derivatives for the output layer and accumulate loss
+  for (i in 1:n_data) {
+    # Forward pass
+    updated_network <- forward(nn, inp[i, ])
+    
+    # Compute loss for data point i
+    pk <- exp(updated_network$h[[n_layers]]) / sum(exp(updated_network$h[[n_layers]]))
+    total_loss <- total_loss - log(pk[k[i]])
+    
+    # Backward pass for the corresponding class k
+    nn <- backward_output_layer(updated_network, k[i], nn)
+    
+    # Accumulate gradients
+    for (l in seq_along(nn$W)) {
+      nn$dW[[l]] <- nn$dW[[l]] + updated_network$dW[[l]]
+      nn$db[[l]] <- nn$db[[l]] + updated_network$db[[l]]
+    }
+  }
+  
+  # Calculate average loss
+  average_loss <- total_loss / n_data
+  
+  # Update network parameters using the average gradients
+  for (l in seq_along(nn$W)) {
+    nn$W[[l]] <- nn$W[[l]] - eta * (nn$dW[[l]] / n_data)
+    nn$b[[l]] <- nn$b[[l]] - eta * (nn$db[[l]] / n_data)
   }
   
   return(nn)
 }
 
-# Q4 solution
+# Backward pass for the corresponding class k
 
+#Question 4 solution
+
+# Function to perform the training of the neural network using SGD
 train <- function(nn, inp, k, eta = 0.01, mb = 10, nstep = 10000) {
   n_data <- nrow(inp)
   
@@ -83,33 +145,46 @@ train <- function(nn, inp, k, eta = 0.01, mb = 10, nstep = 10000) {
     indices <- sample(1:n_data, mb, replace = TRUE)
     
     # Initialize gradients
-    grad_W <- lapply(nn$W, function(x) matrix(0, nrow = nrow(x), ncol = ncol(x)))
-    grad_b <- lapply(nn$b, function(x) numeric(length(x)))
+    nn$dW <- lapply(nn$W, function(x) matrix(0, nrow = nrow(x), ncol = ncol(x)))
+    nn$db <- lapply(nn$b, function(x) numeric(length(x)))
     
-    # Compute average gradients over the mini-batch
+    # Initialize loss
+    total_loss <- 0
+    
+    # Compute gradients and loss for the mini-batch
     for (i in indices) {
       # Forward pass
       updated_network <- forward(nn, inp[i,])
+      
+      # Compute loss for the data point i
+      pk <- exp(updated_network$h[[length(updated_network$h)]]) / sum(exp(updated_network$h[[length(updated_network$h)]]))
+      total_loss <- total_loss - log(pk[k[i]])
       
       # Backward pass for the corresponding class k
       updated_network <- backward(updated_network, k[i])
       
       # Accumulate gradients
       for (l in seq_along(nn$W)) {
-        grad_W[[l]] <- grad_W[[l]] + updated_network$dW[[l]]
-        grad_b[[l]] <- grad_b[[l]] + updated_network$db[[l]]
+        nn$dW[[l]] <- nn$dW[[l]] + updated_network$dW[[l]]
+        nn$db[[l]] <- nn$db[[l]] + updated_network$db[[l]]
       }
     }
     
     # Update network parameters using the average gradients
     for (l in seq_along(nn$W)) {
-      nn$W[[l]] <- nn$W[[l]] - eta * (grad_W[[l]] / mb)
-      nn$b[[l]] <- nn$b[[l]] - eta * (grad_b[[l]] / mb)
+      nn$W[[l]] <- nn$W[[l]] - eta * (nn$dW[[l]] / mb)
+      nn$b[[l]] <- nn$b[[l]] - eta * (nn$db[[l]] / mb)
+    }
+    
+    # Print average loss for monitoring training progress
+    if (step %% 100 == 0) {
+      cat("Step:", step, "   Average Loss:", total_loss / mb, "\n")
     }
   }
   
   return(nn)
 }
+
 
 # Q5 solution
 #Load the iris dataset and preprocess it
@@ -125,7 +200,7 @@ test_data <- iris[(n_train + 1):nrow(iris), -5]
 test_labels <- as.integer(iris[(n_train + 1):nrow(iris), 5])
 
 # Train a 4-8-7-3 network
-nn <- netup(c(3, 4, 4, 2))
+nn <- netup(c(4, 8, 7, 3))
 nn <- train(nn, train_data, train_labels)
 
 # Q6: Classify the test data and calculate the misclassification rate
