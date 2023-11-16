@@ -141,19 +141,23 @@ backward <- function(nn, k) {
 train <- function(nn, inp, k, eta = 0.01, mb = 10, nstep = 10000) {
   n_data <- nrow(inp)
   
+  # Initialize gradients
+  nn$dW <- lapply(nn$W, function(x) matrix(0, nrow = nrow(x), ncol = ncol(x)))
+  nn$db <- lapply(nn$b, function(x) numeric(length(x)))
+  
+  
   for (step in 1:nstep) {
     # Randomly sample mb indices for mini-batch
     indices <- sample(1:n_data, mb, replace = TRUE)
     
-    # Initialize gradients
-    nn$dW <- lapply(nn$W, function(x) matrix(0, nrow = nrow(x), ncol = ncol(x)))
-    nn$db <- lapply(nn$b, function(x) numeric(length(x)))
     
-    # Initialize loss
-    total_loss <- 0
+    
     
     # Compute gradients and loss for the mini-batch
     for (i in indices) {
+      # Initialize loss
+      total_loss <- 0
+      
       # Forward pass
       updated_network <- forward(nn, inp[i,])
       
