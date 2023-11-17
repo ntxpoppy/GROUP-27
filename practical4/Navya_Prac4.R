@@ -1,38 +1,52 @@
-#Q1 solution
+# ------- Step1 ------- #
+# We write a function netup that takes a vector d representing 
+# the number of nodes in each layer and returns a list 
+# representing the neural network. This list should contain 
+# elements for nodes (h), weight matrices (W), and offset vectors 
+# (b). We initialize weights and offsets with random deviates.
 
-#Defining a function to initialize the neural network taking input d
 netup <- function(d) {
   
-  #adding an empty list for neural network which will contain 'h' list of nodes 
-  #'W' a list of matrices and 'b' list of offset parameters
+  # Initialize a list to store neural network components
   nn <- list()
   
-  #Initializing node values 'h' and storing as a list to 'nn' with 
-  #that vector being the same length as the 'd'.
+  # Initialize node values 'h' as a list with the same length as 'd'
   nn$h <- vector("list", length = length(d))
   
-  #iterating through the elements of 'd' 
-  # only from input layers until the last intermediate layer.
+  # Initialize node values for each layer
   for (l in 1:length(d)) {
-    
-    #creating a numeric vector of lth elements with nodes of l layer
     nn$h[[l]] <- numeric(d[l])
   }
   
-  #Initializing weights matrices 'W' and storing as list to 'nn' with 
-  #length of required interconnecting layers.
+  # Initialize weights matrices 'W' and offset parameter matrices 'b'
   nn$W <- vector("list", length = length(d) - 1)
-  
-  #Initializing offset parameter matrices 'b' and storing as list to 'nn' with
-  #length of required interconnecting layers.
   nn$b <- vector("list", length = length(d) - 1)
   
-  #iterating through number of nodes except for the last one.
+  # Iterate through layers to initialize weights and offsets
   for (l in 1:(length(d) - 1)) {
-    nn$W[[l]] <- matrix(runif(d[l] * d[l + 1], 0, 0.2), nrow = d[l], ncol = d[l + 1])
+    nn$W[[l]] <- matrix(runif(d[l+1] * d[l], 0, 0.2), 
+                        nrow = d[l+1], ncol = d[l])
     nn$b[[l]] <- runif(d[l + 1], 0, 0.2)
   }
   
-  #returning the updated list
+  # Return the initialized neural network
+  return(nn)
+}
+
+# ------- Step2 ------- #
+# Implement a function forward(nn, inp) that takes a neural 
+# network and input values for the first layer (inp). 
+# It computes the node values for each layer using the 
+# ReLU activation function and returns the updated network.
+
+forward <- function(nn, inp=nn$h[[1]]) {
+  
+  #iterating through the weights for layers
+  for (l in seq_along(nn$W)) {
+    
+    #forward pass for each layer using the ReLU activation function
+    nn$h[[l + 1]] <- pmax(0, nn$W[[l]]%*%nn$h[[l]] + nn$b[[l]])
+  }
+  #return the updated neural network
   return(nn)
 }
