@@ -73,7 +73,7 @@ netup <- function(d) {
 forward <- function(nn, inp=nn$h[[1]]) {
   for (l in seq_along(nn$W)) {
     # Compute the forward pass using ReLU activation function
-    nn$h[[l + 1]] <- pmax(0, nn$W[[l]] %*% nn$h[[l]] + nn$b[[l]])
+    nn$h[[l + 1]] <- ((nn$W[[l]] %*% nn$h[[l]]) + nn$b[[l]])
   }
   return(nn)
 }
@@ -81,12 +81,15 @@ forward <- function(nn, inp=nn$h[[1]]) {
 # ------- Step3 ------- #
 # Here we write a function backward(nn, k) to compute the derivatives 
 # of the loss corresponding to the output class k. This involves 
-# backpropagation to compute derivatives for nodes, weights, and 
+# back-propagation to compute derivatives for nodes, weights, and 
 # offsets. Update the network with lists dh, dW, and db.
 
 backward <- function(nn, k) {
+  #get the number of layers
   n_layers <- length(nn$h)
+  #get the number of data points of output class k
   n_data <- length(k)
+  
   eta <- 0.01
   
   # Helper function to compute derivatives for the output layer

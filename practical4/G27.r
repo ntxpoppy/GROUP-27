@@ -1,19 +1,19 @@
-#--------------------#
-#    Practical 4     #
-#--------------------#
-
-# ------- Group Introduction ------- #
-
-# The following members form Group 27:
-#   1. Anagha - S2596158
-#   2. Anjali - S2580177
-#   3. Navya  - S2602687
-
+  #--------------------#
+  #    Practical 4     #
+  #--------------------#
+  
+  # ------- Group Introduction ------- #
+  
+  # The following members form Group 27:
+  #   1. Anagha - S2596158
+  #   2. Anjali - S2580177
+  #   3. Navya  - S2602687
+  
 # Contribution of each member:
 # We collectively decided the distribution of questions.
-#   1. Anagha - 34% - Q3 and Q4
-#   2. Anjali - 33% - Q5 and Q6
-#   3. Navya  - 33% - Q1 and Q2
+#   1. Anagha - 34% - Step3 and Step4
+#   2. Anjali - 33% - Step5 and Step6
+#   3. Navya  - 33% - Step1 and Step2
 
 # ------- Overview of the project ------- # 
 
@@ -71,86 +71,99 @@ netup <- function(d) {
 # ReLU activation function and returns the updated network.
 
 forward <- function(nn, inp=nn$h[[1]]) {
+  
+  #iterating through the weights for layers
   for (l in seq_along(nn$W)) {
-    # Compute the forward pass using ReLU activation function
-    nn$h[[l + 1]] <- pmax(0, nn$W[[l]] %*% nn$h[[l]] + nn$b[[l]])
+    
+    #forward pass for each layer using the ReLU activation function
+    nn$h[[l + 1]] <- pmax(0, nn$W[[l]]%*%nn$h[[l]] + nn$b[[l]])
   }
+  #return the updated neural network
   return(nn)
 }
 
 # ------- Step3 ------- #
 # Here we write a function backward(nn, k) to compute the derivatives 
 # of the loss corresponding to the output class k. This involves 
-# backpropagation to compute derivatives for nodes, weights, and 
+# back-propagation to compute derivatives for nodes, weights, and 
 # offsets. Update the network with lists dh, dW, and db.
 
 backward <- function(nn, k) {
+  #get the number of layers
   n_layers <- length(nn$h)
+  #get the number of data points in output class k
   n_data <- length(k)
+  #learning rate(given) for gradient descent
   eta <- 0.01
   
-  # Helper function to compute derivatives for the output layer
-  compute_output_layer_derivative <- function(h_output, k) {
-    exp_h <- exp(h_output)
-    softmax_probs <- exp_h / sum(exp_h)
-    softmax_probs[k] <- softmax_probs[k] - 1
-    return(softmax_probs)
+  #function to compute derivatives for the output layer
+  output_layer_derivative <- function(h, k) {
+    exp_h <- exp(h)
+    #compute pk
+    pk <- exp_h / sum(exp_h)
+    #update pk of true class
+    pk[k] <- pk[k] - 1
+    return(pk)
   }
   
-  # Helper function to compute derivatives for hidden layers
+  #function to compute derivatives for hidden layers
   backward_output_layer <- function(nn, k, updated_network) {
     n_layers <- length(nn$h)
     
-    # Compute derivatives for the output layer
-    nn$dh[[n_layers]] <- compute_output_layer_derivative(updated_network$h[[n_layers]], k)
+    #compute derivatives for the output layer
+    nn$dh[[n_layers]] <- output_layer_derivative(updated_network$h[[n_layers]], k)
     
-    # Backpropagation to compute derivatives for hidden layers
+    #back-propagation to compute derivatives for hidden layers
     for (l in rev(seq_len(n_layers - 1))) {
-      nn$dh[[l]] <- compute_output_layer_derivative(updated_network$h[[l]], k)
+      #compute derivatives for the current hidden layer
+      nn$dh[[l]] <- output_layer_derivative(updated_network$h[[l]], k)
+      #compute derivatives for weights and offsets
       nn$dW[[l]] <- nn$dh[[l + 1]] %*% t(nn$h[[l]])
       nn$db[[l]] <- nn$dh[[l + 1]]
       
-      # Ensure that nn$h[[l]] is a column vector for matrix multiplication
+      #ensure that nn$h[[l]] is a column vector for matrix multiplication
       nn$h[[l]] <- matrix(nn$h[[l]], ncol = 1)
       
-      # Update nn$dh[[l]] using matrix multiplication
+      #update nn$dh[[l]] using matrix multiplication
       nn$dh[[l]] <- ifelse(nn$h[[l]] > 0, t(nn$W[[l]]) %*% nn$dh[[l + 1]], 0)
     }
     
     return(nn)
   }
   
-  # Initialize lists for derivatives
+  #initialize lists for derivatives
   nn$dh <- vector("list", length = n_layers)
   nn$dW <- vector("list", length = n_layers - 1)
   nn$db <- vector("list", length = n_layers - 1)
   
-  # Initialize loss and average loss
+  #initialize loss (and thereby, average loss)
   total_loss <- 0
   
-  # Compute derivatives for the output layer and accumulate loss
+  #compute derivatives for the output layer and accumulate loss
+  #loop through each data point
   for (i in 1:n_data) {
-    # Forward pass
+    #forward pass to compute the network's output for the current data point.
     updated_network <- forward(nn, inp[i, ])
     
-    # Compute loss for data point i
+    #compute the pk for the output layer(loss for data point i)
     pk <- exp(updated_network$h[[n_layers]]) / sum(exp(updated_network$h[[n_layers]]))
+    #negative log-likelihood loss for the current data point and class
     total_loss <- total_loss - log(pk[k[i]])
     
-    # Backward pass for the corresponding class k
+    #backward pass to compute derivatives and update the network's gradients.
     nn <- backward_output_layer(nn, k[i], updated_network)
     
-    # Accumulate gradients
+    #loop through each layer's weights and offsets
     for (l in seq_along(nn$W)) {
       nn$dW[[l]] <- nn$dW[[l]] + updated_network$dW[[l]]
       nn$db[[l]] <- nn$db[[l]] + updated_network$db[[l]]
     }
   }
   
-  # Calculate average loss
+  #calculate average loss
   average_loss <- total_loss / n_data
   
-  # Update network parameters using the average gradients
+  #update network parameters using the average gradients, looping through each layer
   for (l in seq_along(nn$W)) {
     nn$W[[l]] <- nn$W[[l]] - eta * (nn$dW[[l]] / n_data)
     nn$b[[l]] <- nn$b[[l]] - eta * (nn$db[[l]] / n_data)
@@ -167,64 +180,74 @@ backward <- function(nn, k) {
 # mini-batch size (mb), and the number of optimization steps (nstep).
 
 train <- function(nn, inp, k, eta = 0.01, mb = 10, nstep = 10000) {
+  #number of data points in training set
   n_data <- nrow(inp)
   
-  # Helper function to compute derivatives for hidden layers
+  #function to compute derivatives for hidden layers
   backward_output_layer <- function(nn, k, updated_network) {
     n_layers <- length(nn$h)
     
-    # Compute derivatives for the output layer
-    nn$dh[[n_layers]] <- compute_output_layer_derivative(updated_network$h[[n_layers]], k)
+    #compute derivatives for the output layer
+    nn$dh[[n_layers]] <- output_layer_derivative(updated_network$h[[n_layers]], k)
     
-    # Backpropagation to compute derivatives for hidden layers
+    #back-propagation to compute derivatives for hidden layers
     for (l in rev(seq_len(n_layers - 1))) {
-      nn$dh[[l]] <- compute_output_layer_derivative(updated_network$h[[l]], k)
+      #compute derivatives for the current hidden layer
+      nn$dh[[l]] <- output_layer_derivative(updated_network$h[[l]], k)
+      #compute derivatives for weights and offsets
       nn$dW[[l]] <- nn$dh[[l + 1]] %*% t(nn$h[[l]])
       nn$db[[l]] <- nn$dh[[l + 1]]
       
-      # Ensure that nn$h[[l]] is a column vector for matrix multiplication
+      #ensure that nn$h[[l]] is a column vector for matrix multiplication
       nn$h[[l]] <- matrix(nn$h[[l]], ncol = 1)
       
-      # Update nn$dh[[l]] using matrix multiplication
+      #update nn$dh[[l]] using matrix multiplication
       nn$dh[[l]] <- ifelse(nn$h[[l]] > 0, t(nn$W[[l]]) %*% nn$dh[[l + 1]], 0)
     }
     
     return(nn)
   }
   
-  # Helper function to compute derivatives for the output layer
-  compute_output_layer_derivative <- function(h_output, k) {
-    exp_h <- exp(h_output)
-    softmax_probs <- exp_h / sum(exp_h)
-    softmax_probs[k] <- softmax_probs[k] - 1
-    return(softmax_probs)
+  #function to compute derivatives for the output layer
+  output_layer_derivative <- function(h, k) {
+    exp_h <- exp(h)
+    #compute pk
+    pk <- exp_h / sum(exp_h)
+    #update pk of true class
+    pk[k] <- pk[k] - 1
+    return(pk)
   }
   
-  # Initialize gradients for the mini-batch
+  #initialize gradients for the mini-batch using lapply
+  #create a matrix of zeros with the same dimensions as the
+  #corresponding weight matrix in nn$W
   mini_batch_dW <- lapply(nn$W, function(x) matrix(0, nrow = nrow(x), ncol = ncol(x)))
+  #create a numeric vector of zeros with the same length as the
+  #corresponding offset vector in nn$b
   mini_batch_db <- lapply(nn$b, function(x) numeric(length(x)))
   
+  #training steps
   for (step in 1:nstep) {
-    # Randomly sample mb indices for mini-batch
+    #randomly sample mb indices for mini-batch
     indices <- sample(1:n_data, mb, replace = TRUE)
     
-    # Compute gradients and loss for the mini-batch
+    #compute gradients and loss for the mini-batch
     for (i in indices) {
-      # Initialize loss
+      #initialize loss
       total_loss <- 0
       
-      # Forward pass
+      #forward pass
       updated_network <- forward(nn, inp[i,])
       
-      # Compute loss for the data point i
+      #compute loss for the data point i
       pk <- exp(updated_network$h[[length(updated_network$h)]]) / 
         sum(exp(updated_network$h[[length(updated_network$h)]]))
       total_loss <- total_loss - log(pk[k[i]])
       
-      # Backward pass for the corresponding class k
+      #backward pass for the corresponding class k
       nn <- backward_output_layer(nn, k[i], updated_network)
       
-      # Accumulate gradients
+      #accumulate gradients for the data point i
       for (l in seq_along(nn$W)) {
         nn$dW <- lapply(nn$W, function(x) matrix(0, nrow = as.numeric(nrow(x)), 
                                                  ncol = as.numeric(ncol(x))))
@@ -232,13 +255,13 @@ train <- function(nn, inp, k, eta = 0.01, mb = 10, nstep = 10000) {
       }
     }
     
-    # Update network parameters using the average gradients
+    #update network parameters using the average gradients
     for (l in seq_along(nn$W)) {
       nn$W[[l]] <- nn$W[[l]] - eta * (nn$dW[[l]] / mb)
       nn$b[[l]] <- nn$b[[l]] - eta * (nn$db[[l]] / mb)
     }
     
-    # Print average loss for monitoring training progress
+    #print average loss for monitoring training progress(every 200 steps)
     if (step %% 200 == 0) {
       cat("Step:", step, "   Average Loss:", total_loss / mb, "\n")
     }

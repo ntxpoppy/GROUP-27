@@ -199,7 +199,7 @@ train <- function(nn, inp, k, eta = 0.01, mb = 10, nstep = 10000) {
 # Q5 solution
 #Load the iris dataset and preprocess it
 data(iris)
-set.seed(80)  # Set a seed for reproducibility
+set.seed(69)  # Set a seed for reproducibility
 iris <- iris[sample(nrow(iris)), ]  # Shuffle the dataset
 
 # Split the data into training and test sets
